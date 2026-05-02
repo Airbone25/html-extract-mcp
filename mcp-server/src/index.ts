@@ -16,17 +16,17 @@ server.registerTool("html-extractor", {
     }
 },
     async ({ url }) => {
-        try{
+        try {
             const summary = await fetchWebsite(url)
             return {
                 content: [
-                    {type: "text", text: summary}
+                    { type: "text", text: summary }
                 ]
             }
-        }catch(error){
+        } catch (error) {
             return {
                 content: [
-                    {type: "text", text: "Failed to save user"}
+                    { type: "text", text: "Failed to save user" }
                 ]
             }
         }
@@ -34,14 +34,17 @@ server.registerTool("html-extractor", {
 )
 
 async function fetchWebsite(url: string): Promise<string> {
-    try{
-        const res = await axios.get(url)
-        const $ = cheerio.load(res.data)
+    try {
+        const res = await fetch(url)
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`)
+        }
+        const $ = cheerio.load(await res.text())
         $("script,style,noscript").remove()
         const text = $("body").text()
-        const cleaned = text.replace(/\s+/g," ").trim().slice(0,3000)
+        const cleaned = text.replace(/\s+/g, " ").trim().slice(0, 3000)
         return cleaned
-    }catch(error){
+    } catch (error) {
         console.error("Error fetching website:", error)
         return "Failed to fetch website content."
     }
